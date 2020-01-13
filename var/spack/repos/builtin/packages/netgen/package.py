@@ -3,10 +3,11 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import os
+import sys
 from spack import *
 
-
-class Netgen(AutotoolsPackage):
+class Netgen(CMakePackage):
     """NETGEN is an automatic 3d tetrahedral mesh generator. It accepts
        input from constructive solid geometry (CSG) or boundary
        representation (BRep) from STL file format. The connection to
@@ -15,51 +16,37 @@ class Netgen(AutotoolsPackage):
        mesh refinement. """
 
     homepage = "https://ngsolve.org/"
-    url = "https://sourceforge.net/projects/netgen-mesher/files/netgen-mesher/5.3/netgen-5.3.1.tar.gz"
+    git = "https://github.com/NGSolve/netgen.git"
 
-    version('5.3.1', sha256='cb97f79d8f4d55c00506ab334867285cde10873c8a8dc783522b47d2bc128bf9')
+    maintainers = ['mhochsteger']
 
-    variant("mpi", default=True, description='enable mpi support')
-    variant("oce", default=False, description='enable oce geometry kernel')
-    variant("gui", default=False, description='enable gui')
-    variant("metis", default=False, description='use metis for partitioning')
+    # TODO: multiple versions
+    version('6.2.1910', tag='v6.2.1910', submodules=True)
+
+    variant('native', default=True, description='Build/optimize for native CPU architecture')
+    variant('python', default=True, description='Enable Python support')
+    variant('mpi', default=True, description='Enable MPI support')
+
+    extends('python', when='+python')
+    depends_on('py-pybind11', when='+python', type=('build','run'))
 
     depends_on('zlib')
     depends_on('mpi', when='+mpi')
-    depends_on('oce+X11', when='+oce')
-    depends_on('metis', when='+metis')
 
-    def url_for_version(self, version):
-        url = "https://sourceforge.net/projects/netgen-mesher/files/netgen-mesher/{0}/netgen-{1}.tar.gz"
-        return url.format(version.up_to(2), version)
-
-    def configure_args(self):
+    def cmake_args(self):
         spec = self.spec
-        args = []
-        if '+mpi' in spec:
-            args.extend([
-                "CC={0}".format(spec['mpi'].mpicc),
-                "CXX={0}".format(spec['mpi'].mpicxx)
-            ])
-        else:
-            args.append("--without-mpi")
+        check_spec = lambda s: 'ON' if '+'+s in spec else 'OFF'
 
-        if '+oce' in spec:
-            args.append("--with-occ={0}".format(spec['oce'].prefix))
-        #  FIXME
-        # due to a bug in netgen config, when --without-occ is specified
-        #   or --with-occ=no, OCC flags is turned true, and build fails
-        #   later; so do not specify anything like that
-        # else:
-        #    args.append("--without-occ")
+        cmake_args = [
+            '-DUSE_SUPERBUILD=OFF',
+            '-DUSE_NATIVE_ARCH='+check_spec('native'),
+            '-DUSE_PYTHON='+check_spec('python'),
+            '-DUSE_MPI='+check_spec('mpi'),
+            '-DUSE_GUI=OFF'
+            ]
 
-        if '~gui' in spec:
-            args.append("--disable-gui")
-        else:
-            args.append("--enable-gui")
-        if '+metis' in spec:
-            args.append('--with-metis=%s' % spec['metis'].prefix)
-        else:
-            args.append("--without-metis")
+        if '+python' in spec:
+            cmake_args.append('-DPYBIND_INDLUDE_DIR='+spec['py-pybind11'].prefix.include)
+            cmake_args.append('-DNG_INSTALL_PYBIND=OFF')
 
-        return args
+        return cmake_args
