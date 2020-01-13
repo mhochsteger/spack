@@ -1,0 +1,14 @@
+diff --git a/cmake/cmake_modules/FindMUMPS.cmake b/cmake/cmake_modules/FindMUMPS.cmake
+index 5b33fa5d..c717050f 100644
+--- a/cmake/cmake_modules/FindMUMPS.cmake
++++ b/cmake/cmake_modules/FindMUMPS.cmake
+@@ -9,7 +9,8 @@ if(EXISTS ${MUMPS_DIR}/include/zmumps_c.h)
+     find_library(LIB_MUMPS_Z zmumps PATHS ${MUMPS_DIR}/lib)
+     find_library(LIB_PARMETIS parmetis HINTS ${PARMETIS_DIR}/lib)
+     find_library(LIB_METIS metis HINTS ${PARMETIS_DIR}/lib)
+-    set(MUMPS_LIBRARIES "${LIB_MUMPS_D};${LIB_MUMPS_Z};${LIB_MUMPS_COMMON};${LIB_PARMETIS};${LIB_METIS}")
++    find_library(LIB_PORD pord HINTS ${MUMPS_DIR}/lib)
++    set(MUMPS_LIBRARIES "${LIB_MUMPS_D};${LIB_MUMPS_Z};${LIB_MUMPS_COMMON};${LIB_PARMETIS};${LIB_METIS};${LIB_PORD}")
+ endif(EXISTS ${MUMPS_DIR}/include/zmumps_c.h)
+ include(FindPackageHandleStandardArgs)
+ find_package_handle_standard_args(MUMPS DEFAULT_MSG MUMPS_LIBRARIES MUMPS_INCLUDES)

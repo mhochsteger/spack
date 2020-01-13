@@ -15,6 +15,8 @@ class Ngsolve(CMakePackage):
 
     maintainers = ['mhochsteger']
 
+    patch('ngs_mumps_pord1.patch')
+
     version('6.2.1910', tag='v6.2.1910')
 
     variant('native', default=True, description='Build/optimize for native CPU architecture')
@@ -29,17 +31,15 @@ class Ngsolve(CMakePackage):
     depends_on('netgen+mpi', when='+mpi')
     depends_on('netgen~mpi', when='~mpi')
 
-    depends_on('mumps', when='+mpi')
+    depends_on('mumps+parmetis+metis', when='+mpi')
 
     def cmake_args(self):
         spec = self.spec
-        print(spec['netgen'].to_dict())
-        check_spec = lambda s: 'ON' if '+'+s in spec else 'OFF'
 
         cmake_args = [
             '-DUSE_SUPERBUILD=OFF',
-            '-DNETGEN_DIR='+spec['netgen'].prefix,
-            '-DNETGEN_PYBIND_INCLUDE_DIR='+spec['netgen'].prefix
+            '-DUSE_UMFPACK=OFF',
+            '-DNETGEN_DIR='+spec['netgen'].prefix
             ]
 
         if '+python' in spec['netgen']:
@@ -48,5 +48,6 @@ class Ngsolve(CMakePackage):
         if '+mpi' in spec:
             cmake_args.append('-DUSE_MUMPS=ON)')
             cmake_args.append('-DMUMPS_DIR='+spec['mumps'].prefix)
+            cmake_args.append('-DPARMETIS_DIR='+spec['parmetis'].prefix)
 
         return cmake_args

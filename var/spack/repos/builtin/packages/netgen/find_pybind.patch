@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ee1b532a..8329476a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -278,7 +278,7 @@ else()
+ endif()
+
+ if (USE_PYTHON)
+-    add_subdirectory(external_dependencies/pybind11)
++    find_package(pybind11 REQUIRED CONFIG)
+     find_path(PYBIND_INCLUDE_DIR pybind11/pybind11.h HINTS ${PYTHON_INCLUDE_DIR})
+     if( PYBIND_INCLUDE_DIR )
+         message(STATUS "Found Pybind11: ${PYBIND_INCLUDE_DIR}")

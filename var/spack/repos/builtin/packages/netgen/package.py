@@ -20,8 +20,10 @@ class Netgen(CMakePackage):
 
     maintainers = ['mhochsteger']
 
+    patch('find_pybind.patch')
+
     # TODO: multiple versions
-    version('6.2.1910', tag='v6.2.1910', submodules=True)
+    version('6.2.1910', tag='v6.2.1910', submodules=False)
 
     variant('native', default=True, description='Build/optimize for native CPU architecture')
     variant('python', default=True, description='Enable Python support')
@@ -32,6 +34,7 @@ class Netgen(CMakePackage):
 
     depends_on('zlib')
     depends_on('mpi', when='+mpi')
+    depends_on('metis', when='+mpi')
 
     def cmake_args(self):
         spec = self.spec
@@ -46,7 +49,13 @@ class Netgen(CMakePackage):
             ]
 
         if '+python' in spec:
-            cmake_args.append('-DPYBIND_INDLUDE_DIR='+spec['py-pybind11'].prefix.include)
+            cmake_args.append('-DPYBIND11_DIR='+spec['py-pybind11'].prefix)
             cmake_args.append('-DNG_INSTALL_PYBIND=OFF')
+
+        if '+mpi' in spec:
+            cmake_args.append('-DMPI_C_COMPILER='+spec['mpi'].mpicc)
+            cmake_args.append('-DMPI_CXX_COMPILER='+spec['mpi'].mpicxx)
+            cmake_args.append('-DMETIS_DIR='+spec['metis'].prefix)
+
 
         return cmake_args
