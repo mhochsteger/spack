@@ -22,8 +22,8 @@ class Netgen(CMakePackage):
 
     patch('find_pybind.patch')
 
-    # TODO: multiple versions
-    version('6.2.1910', tag='v6.2.1910', submodules=False)
+    version('6.2.1910', tag='v6.2.1910', preferred=True)
+    version('master', branch='master')
 
     variant('native', default=True, description='Build/optimize for native CPU architecture')
     variant('python', default=True, description='Enable Python support')
